@@ -5,7 +5,7 @@
    <key>name</key>
    <string>Symbol List</string>
    <key>scope</key>
-   <string>entity.task.todotxt</string>
+   <string>entity.task.todotxt, entity.task.todotxt.in_progress, entity.task.todotxt.locked, entity.task.todotxt.active</string>
    <key>settings</key>
    <dict>
       <key>showInSymbolList</key>

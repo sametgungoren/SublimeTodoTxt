@@ -8,20 +8,20 @@ file_extensions:
   - todotxt
 scope: text.todotxt
 variables:
-  date: (?:[1-2]\d{3}[-/\\.](?:0?[1-9]|1[012])[-/\\.](?:0[1-9]|[12]\d|3[01]))
+  date: (?:[1-2]\d{3}[-/\\.](?:0?[1-9]|1[012])[-/\\.](?:0?[1-9]|[12]\d|3[01]))
+  task_dates: (?:({{date}})\s+(?:({{date}})\s+)?)?
 contexts:
   main:
     - include: comments
     - include: task_done
+    - include: task_in_progress
+    - include: task_locked
+    - include: task_active
     - include: task_todo
 
 
   task_done:
-    # Complex regexp:
-    # - 'x ' is required
-    # - then goes optional Completion date
-    #   - then goes optional Creation date
-    - match: ^\s*x\s+(?:({{date}})\s+(?:({{date}})\s+)?)?
+    - match: ^\s*\+\s+{{task_dates}}
       comment: Todo done item
       scope: comment.line.todotxt
       captures:
@@ -34,13 +34,48 @@ contexts:
           pop: true
 
 
+  task_in_progress:
+    - match: ^\s*-\s+{{task_dates}}
+      comment: Todo in progress item
+      captures:
+        1: constant.numeric.todotxt.date
+        2: constant.numeric.todotxt.date
+      push:
+        - meta_scope: entity.task.todotxt.in_progress
+        - include: inside_task
+        - match: $\n?
+          pop: true
+
+
+  task_locked:
+    - match: ^\s*\?\s+{{task_dates}}
+      comment: Todo locked item
+      captures:
+        1: constant.numeric.todotxt.date
+        2: constant.numeric.todotxt.date
+      push:
+        - meta_scope: entity.task.todotxt.locked
+        - include: inside_task
+        - match: $\n?
+          pop: true
+
+
+  task_active:
+    - match: ^\s*\*\s+{{task_dates}}
+      comment: Todo active (current focus) item
+      captures:
+        1: constant.numeric.todotxt.date
+        2: constant.numeric.todotxt.date
+      push:
+        - meta_scope: entity.task.todotxt.active
+        - include: inside_task
+        - match: $\n?
+          pop: true
+
+
   task_todo:
-    # Complex regexp:
-    # - the whole regexp is optional
-    # - firstly goes optional Priority
-    # - then goes Creation date
     - match: '^(?:\s*(?:(\([A-Z]\))\s+)?(?:({{date}})\s+)?)?'
-      comment: Todo item undone
+      comment: Todo item open
       captures:
         1: invalid.deprecated.todotxt
         2: constant.language.todotxt.priority
@@ -62,7 +97,6 @@ contexts:
       captures:
         1: string.quoted.double.todotxt.project
 
-    # Non standard WAIT
     - match: '\b(?i:WAIT)\b'
       comment: Todo WAIT command
       scope: keyword.other.todotxt.wait
@@ -72,11 +106,9 @@ contexts:
       scope: variable.annotation.todotxt.attribute
 
   comments:
-    # Comments begin with a '//' and finish at the end of the line.
     - match: //
       scope: punctuation.definition.comment.example-c
       push:
-        # This is an anonymous context push for brevity.
         - meta_scope: comment.line.double-slash.example-c
         - match: $\n?
           pop: true

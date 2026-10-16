@@ -1,45 +1,65 @@
-# SublimeTodoTxt #
+# SublimeTodoTxt
 
-This is [Todo.txt](http://todotxt.com) syntax highlighting support for [Sublime Text](http://www.sublimetext.com) (tested with Sublime Text 3).
+Syntax highlighting and `@` / `+` autocompletion for [Todo.txt](http://todotxt.com) task lists in [Sublime Text](http://www.sublimetext.com) (Sublime Text 3 and 4).
 
 ![Screenshot](Screenshot.png)
 
-## Background ##
+## Task states
 
-I am currently using Todo.txt exclusively to manage all tasks which don't necessarily need to be set to a specific date (which is something the Todo.txt format can't handle by default). While there are some really great mobile apps for managing the Todo.txt file (via Dropbox), all available Windows GUIs are crap.
+This fork uses line-prefix markers instead of the standard Todo.txt `x` completion marker:
 
-On the other hand, Todo.txt is a plain text format, so why waste GUI overhead? So I decided to add Todo.txt highlighting to Sublime Text.
+| Prefix | State |
+| --- | --- |
+| `+` | Done |
+| `-` | In progress |
+| `?` | Locked |
+| `*` | Active (current focus) |
 
-## Current state ##
+Example:
 
-This repository contains everything that's needed to display plain Todo.txt files correctly.
+```
+(A) Call Mom @Phone +Family
+- Outline chapter 5 +Novel @Computer
+? Waiting on publisher reply +Novel
+* Research self-publishing services +Novel @Computer
++ Download Todo.txt mobile app @Phone
+```
 
-### Installation ###
+Priorities `(A)`–`(Z)`, `@context`, inline `+project`, dates, and `//` comments behave as before. Project tags such as `+Novel` stay in the line body; a completed task starts with `+ ` (plus and a space).
 
-#### via Package Control (recommended) ####
+## Installation
 
-SublimeTodoTxt is available from wbond's [Package Control](https://packagecontrol.io/) plug-in, you can find it as [Todo.txt Syntax](https://packagecontrol.io/packages/Todo.txt%20Syntax).
+See [docs/installation.md](docs/installation.md) for platform paths and details.
 
-#### manually ####
+### Build package
 
-If you don't want to use Package Control, just copy the syntax file into your Packages directory.
+```bash
+chmod +x scripts/build-package.sh
+./scripts/build-package.sh
+```
 
-## Useful tricks ##
+Copy `dist/TodoTxt.sublime-package` into Sublime’s **Installed Packages** directory.
 
-If you want Sublime Text to automatically save your Todo.txt file when the window loses its focus, just create a file named `TodoTxt.sublime-settings` in your `User` package, its contents are:
+### Development
 
-    {
-       "save_on_focus_lost": true
-    }
-    
-Now you're done.
+Symlink or copy this repository under `Packages/SublimeTodoTxt`, then **Developer: Reload Window** after syntax changes.
 
-## Future development ##
+### Package Control
 
-As Todo.txt is a rather simple format, I doubt that it's necessary to add any plug-in functionalities. Using menu items or shortcuts to change priorities and tags would probably be more effort than just changing the particular characters manually.
+The upstream [Todo.txt Syntax](https://packagecontrol.io/packages/Todo.txt%20Syntax) package uses standard `x` semantics; use manual install for this fork.
 
-I do, however, plan to keep up with Sublime Text development, so once ST4 comes out and breaks stuff, I'll most likely be ready. In case there are any wishes, please drop by in the [forum thread](https://forum.sublimetext.com/t/sublimetodotxt-todo-txt-syntax-highlighting/10003) for SublimeTodoTxt. :-)
+## Settings
 
-## Make me rich! ##
+Optional auto-save on focus loss in your **User** package (`TodoTxt.sublime-settings`):
 
-In case you are German and like what I do, feel free to install my [Amazon.de partner script](https://tuxproject.de/projects/vim/hf20.partnerlinks.user.js) (requires userscript support in your browser, like Firefox with the Greasemonkey extension) which adds my "tag" to all Amazon.de links. You can also lend me some Bitcoins, the preferred address is *1FJngJTiBiidA2HZ81xS9FGdrQmbQe2BHY*.
+```json
+{
+   "save_on_focus_lost": true
+}
+```
+
+The package suggests existing `@context` and `+project` tokens from the file (`TodoTxt.sublime-settings`).
+
+## Credits
+
+Based on the original SublimeTodoTxt / Package Control project; this repository adds custom state markers.

@@ -1,6 +1,14 @@
 [
     {
+        "caption": "Todo.txt: Show Package Version",
+        "command": "todotxt_show_version"
+    },
+    {
         "caption": "Todo.txt: Prefix + on Subtasks Under Completed Parents",
         "command": "todotxt_complete_subtasks"
+    },
+    {
+        "caption": "Todo.txt: Refresh Subtasks and Highlighting",
+        "command": "todotxt_refresh"
     }
 ]

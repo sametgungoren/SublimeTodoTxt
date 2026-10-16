@@ -62,6 +62,10 @@ Settings in `TodoTxt.sublime-settings`:
 
 Command palette: **Todo.txt: Prefix + on Subtasks Under Completed Parents**.
 
+## Version
+
+Each `./scripts/build-package.sh` run sets `VERSION` in `plugin.py` to `vUTC-YYYY.MM.DD.HH.MM.SS`. With a todo file focused, the status bar shows `TodoTxt <version>`. Use **Todo.txt: Show Package Version** to confirm Sublime loaded this package and not Package Control’s upstream syntax-only build.
+
 ## Installation
 
 See [docs/installation.md](docs/installation.md) for platform paths and details.

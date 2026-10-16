@@ -58,3 +58,23 @@ Line prefixes (instead of standard `x`):
 | `*` | Active |
 
 Inline project tags (`+Novel`) still require leading whitespace. A done line starts with `+ ` (plus then space).
+
+## Verify the installed version
+
+1. Open a `todo.txt` file with syntax **Todo.txt**.
+2. Check the **status bar** (bottom right): `TodoTxt vYYYY.MM.DD.HH.MM.SS`.
+3. **Command Palette** → **Todo.txt: Show Package Version**.
+
+If the version is older than your git checkout or `plugin.py` on disk, Sublime is still loading another copy of the package.
+
+### Common reasons updates do not appear
+
+| Issue | What to do |
+| --- | --- |
+| Duplicate **Package Control** package `Todo.txt Syntax` | Remove it; keep only this fork under `Packages/SublimeTodoTxt` **or** `Installed Packages/TodoTxt.sublime-package`, not both. |
+| Old `.sublime-package` in **Installed Packages** | Delete `TodoTxt.sublime-package`, copy the new file from `dist/`, reload window. |
+| Symlink points to an old clone | `git pull` in the repo, then **Developer: Reload Window**. |
+| Syntax not **Todo.txt** | **View** → **Syntax** → **Todo.txt** (plugin settings apply only with this syntax). |
+| Buffer open before reload | **Todo.txt: Refresh Subtasks and Highlighting** or close and reopen the file. |
+
+After `./scripts/build-package.sh`, the version string in `plugin.py` and the status bar updates to the build timestamp (UTC).

@@ -1,0 +1,4 @@
+{
+    "install": "TodoTxt: custom task markers (+ - ? *), colors, and indented subtasks under completed parents.",
+    "v2026.10.16.11.45.36": "Fix syntax-specific settings (Todo.txt.sublime-settings), package version in status bar, plugin reload refresh, and Mariana color scheme path."
+}

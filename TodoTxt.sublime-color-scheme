@@ -1,6 +1,6 @@
 {
   "name": "TodoTxt (task state accents)",
-  "extends": "Mariana.sublime-color-scheme",
+  "extends": "Packages/Color Scheme - Default/Mariana.sublime-color-scheme",
   "variables": {
     "todotxt_active": "#22c55e",
     "todotxt_locked": "#a855f7"

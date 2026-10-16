@@ -48,11 +48,12 @@ contexts:
 
 
   task_locked:
-    - match: ^\s*\?\s+{{task_dates}}
+    - match: ^\s*(\?)\s+{{task_dates}}
       comment: Todo locked item
       captures:
-        1: constant.numeric.todotxt.date
+        1: entity.task.todotxt.locked.marker
         2: constant.numeric.todotxt.date
+        3: constant.numeric.todotxt.date
       push:
         - meta_scope: entity.task.todotxt.locked
         - include: inside_task
@@ -61,11 +62,12 @@ contexts:
 
 
   task_active:
-    - match: ^\s*\*\s+{{task_dates}}
+    - match: ^\s*(\*)\s+{{task_dates}}
       comment: Todo active (current focus) item
       captures:
-        1: constant.numeric.todotxt.date
+        1: entity.task.todotxt.active.marker
         2: constant.numeric.todotxt.date
+        3: constant.numeric.todotxt.date
       push:
         - meta_scope: entity.task.todotxt.active
         - include: inside_task

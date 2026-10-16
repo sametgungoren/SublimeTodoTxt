@@ -9,8 +9,10 @@ mkdir -p "${OUT_DIR}"
 
 FILES=(
   plugin.py
+  Default.sublime-commands
   TodoTxt.sublime-syntax
   TodoTxt.sublime-settings
+  TodoTxt.sublime-color-scheme
   Miscellaneous.tmPreferences
   Symbol\ List.tmPreferences
 )

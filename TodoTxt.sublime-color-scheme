@@ -1,0 +1,32 @@
+{
+  "name": "TodoTxt (task state accents)",
+  "extends": "Mariana.sublime-color-scheme",
+  "variables": {
+    "todotxt_active": "#22c55e",
+    "todotxt_locked": "#a855f7"
+  },
+  "rules": [
+    {
+      "scope": "entity.task.todotxt.active",
+      "foreground": "var(todotxt_active)"
+    },
+    {
+      "scope": "entity.task.todotxt.active.marker",
+      "foreground": "var(todotxt_active)",
+      "font_style": "bold"
+    },
+    {
+      "scope": "entity.task.todotxt.locked",
+      "foreground": "var(todotxt_locked)"
+    },
+    {
+      "scope": "entity.task.todotxt.locked.marker",
+      "foreground": "var(todotxt_locked)",
+      "font_style": "bold"
+    },
+    {
+      "scope": "comment.line.todotxt.inherited",
+      "foreground": "var(comment)"
+    }
+  ]
+}

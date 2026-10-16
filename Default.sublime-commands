@@ -1,0 +1,6 @@
+[
+    {
+        "caption": "Todo.txt: Prefix + on Subtasks Under Completed Parents",
+        "command": "todotxt_complete_subtasks"
+    }
+]

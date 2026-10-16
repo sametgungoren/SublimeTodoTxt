@@ -4,11 +4,11 @@
         "command": "todotxt_show_version"
     },
     {
-        "caption": "Todo.txt: Prefix + on Subtasks Under Completed Parents",
-        "command": "todotxt_complete_subtasks"
+        "caption": "Todo.txt: Sync Subtask Status From Parent",
+        "command": "todotxt_sync_subtasks"
     },
     {
-        "caption": "Todo.txt: Refresh Subtasks and Highlighting",
+        "caption": "Todo.txt: Refresh Subtasks",
         "command": "todotxt_refresh"
     }
 ]

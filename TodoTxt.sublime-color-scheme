@@ -23,10 +23,6 @@
       "scope": "entity.task.todotxt.locked.marker",
       "foreground": "var(todotxt_locked)",
       "font_style": "bold"
-    },
-    {
-      "scope": "comment.line.todotxt.inherited",
-      "foreground": "var(comment)"
     }
   ]
 }

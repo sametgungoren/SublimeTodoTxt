@@ -1,7 +1,5 @@
 {
-    "color_scheme": "TodoTxt.sublime-color-scheme",
-    "todotxt_subtask_inherit_done_color": true,
-    "todotxt_subtask_auto_prefix_done": true,
+    "todotxt_sync_subtasks": true,
     "auto_complete": true,
     "auto_complete_triggers": [
         {

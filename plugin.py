@@ -1,15 +1,12 @@
-import re
-
 import sublime
 import sublime_plugin
 
-VERSION = "v2026.10.16.11.45.36"
+from todotxt_subtask_sync import sync_subtask_lines
 
-STATE_MARKER_RE = re.compile(r'^(\+|-|\?|\*)\s')
-REGION_KEY = 'todotxt.subtask_inherited_done'
-INHERITED_SCOPE = 'comment.line.todotxt.inherited'
-BUSY_KEY = 'todotxt_subtask_busy'
+VERSION = "v2026.10.16.11.54.13"
+
 STATUS_KEY = 'todotxt_version'
+SYNC_BUSY_KEY = 'todotxt_sync_busy'
 
 
 def is_todotxt_view(view):
@@ -29,71 +26,17 @@ def is_todotxt_view(view):
     return view.match_selector(0, 'text.todotxt')
 
 
-def line_indent_level(line):
-    level = 0
-    index = 0
-    length = len(line)
-    while index < length:
-        char = line[index]
-        if char == '\t':
-            level += 1
-            index += 1
-            continue
-        if char == ' ':
-            end = index
-            while end < length and line[end] == ' ':
-                end += 1
-            if end == index:
-                break
-            level += max(1, (end - index) // 4)
-            index = end
-            continue
-        break
-    return level, index
-
-
-def line_is_comment_or_blank(line, content_start):
-    body = line[content_start:].strip()
-    return not body or body.startswith('//')
-
-
-def analyze_subtasks(lines):
-    stack = []
-    inherited_lines = []
-    prefix_inserts = []
-
-    for line_no, line in enumerate(lines):
-        level, content_start = line_indent_level(line)
-        if line_is_comment_or_blank(line, content_start):
-            continue
-
-        content = line[content_start:]
-        explicit_done = content.startswith('+ ')
-
-        while stack and stack[-1][0] >= level:
-            stack.pop()
-
-        if stack and stack[-1][1] and level > stack[-1][0]:
-            if not explicit_done:
-                inherited_lines.append(line_no)
-                if not STATE_MARKER_RE.match(content):
-                    prefix_inserts.append((line_no, content_start))
-
-        stack.append((level, explicit_done))
-
-    return inherited_lines, prefix_inserts
-
-
-def refresh_todotxt_view(view):
+def schedule_sync(view):
     if not is_todotxt_view(view):
         return
-    TodoTxtSubtaskListener(view)._refresh()
+    sublime.set_timeout(lambda: view.run_command('todotxt_sync_subtasks'), 50)
 
 
 def refresh_all_todotxt_views():
     for window in sublime.windows():
         for view in window.views():
-            refresh_todotxt_view(view)
+            if is_todotxt_view(view):
+                schedule_sync(view)
 
 
 def plugin_loaded():
@@ -104,93 +47,57 @@ def plugin_unloaded():
     for window in sublime.windows():
         for view in window.views():
             view.erase_status(STATUS_KEY)
-            view.erase_regions(REGION_KEY)
 
 
 class TodoTxtSubtaskListener(sublime_plugin.ViewEventListener):
     def on_load(self):
-        self._schedule()
+        schedule_sync(self.view)
 
     def on_activated(self):
-        self._show_version()
-        self._schedule()
-
-    def on_modified(self):
-        self._schedule()
-
-    def _show_version(self):
         if is_todotxt_view(self.view):
             self.view.set_status(STATUS_KEY, f'TodoTxt {VERSION}')
         else:
             self.view.erase_status(STATUS_KEY)
+        schedule_sync(self.view)
 
-    def _schedule(self):
-        if not is_todotxt_view(self.view):
+    def on_modified(self):
+        if self.view.settings().get(SYNC_BUSY_KEY):
             return
-        sublime.set_timeout(self._refresh, 50)
+        schedule_sync(self.view)
 
-    def _refresh(self):
-        if not is_todotxt_view(self.view):
+
+class TodoTxtSyncSubtasksCommand(sublime_plugin.TextCommand):
+    def run(self, edit):
+        view = self.view
+        if not is_todotxt_view(view):
             return
-        if self.view.settings().get(BUSY_KEY):
+        if not view.settings().get('todotxt_sync_subtasks', True):
+            return
+        if view.is_read_only():
             return
 
-        inherit_color = self.view.settings().get('todotxt_subtask_inherit_done_color', True)
-        auto_prefix = self.view.settings().get('todotxt_subtask_auto_prefix_done', True)
+        lines = view.split_by_newlines()
+        replacements = sync_subtask_lines(lines)
+        if not replacements:
+            return
 
-        lines = self.view.split_by_newlines()
-        inherited_lines, prefix_inserts = analyze_subtasks(lines)
-
-        if auto_prefix and prefix_inserts and not self.view.is_read_only():
-            self.view.settings().set(BUSY_KEY, True)
-            try:
-                edit = self.view.begin_edit('todotxt_subtask_prefix')
-                for line_no, content_start in reversed(prefix_inserts):
-                    point = self.view.text_point(line_no, content_start)
-                    self.view.insert(edit, point, '+ ')
-                self.view.end_edit(edit)
-                lines = self.view.split_by_newlines()
-                inherited_lines, _ = analyze_subtasks(lines)
-            finally:
-                self.view.settings().erase(BUSY_KEY)
-
-        if inherit_color:
-            regions = []
-            for line_no in inherited_lines:
+        view.settings().set(SYNC_BUSY_KEY, True)
+        try:
+            for line_no, new_line in reversed(replacements):
                 line = lines[line_no]
-                level, content_start = line_indent_level(line)
-                if line_is_comment_or_blank(line, content_start):
-                    continue
-                start = self.view.text_point(line_no, 0)
-                end = self.view.text_point(line_no, len(line.rstrip('\n\r')))
-                regions.append(sublime.Region(start, end))
-            self.view.add_regions(
-                REGION_KEY,
-                regions,
-                INHERITED_SCOPE,
-                'dot',
-                sublime.HIDDEN | sublime.PERSISTENT,
-            )
-        else:
-            self.view.erase_regions(REGION_KEY)
+                start = view.text_point(line_no, 0)
+                end = view.text_point(line_no, len(line))
+                view.replace(edit, sublime.Region(start, end), new_line)
+        finally:
+            view.settings().erase(SYNC_BUSY_KEY)
 
-        self._show_version()
+        if is_todotxt_view(view):
+            view.set_status(STATUS_KEY, f'TodoTxt {VERSION}')
 
 
 class TodoTxtCompleteSubtasksCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        view = self.view
-        if not is_todotxt_view(view):
-            sublime.error_message('TodoTxt: open a todo.txt file with the Todo.txt syntax first.')
-            return
-
-        lines = view.split_by_newlines()
-        _, prefix_inserts = analyze_subtasks(lines)
-        for line_no, content_start in reversed(prefix_inserts):
-            point = view.text_point(line_no, content_start)
-            view.insert(edit, point, '+ ')
-
-        refresh_todotxt_view(view)
+        self.view.run_command('todotxt_sync_subtasks')
 
 
 class TodoTxtRefreshCommand(sublime_plugin.WindowCommand):
@@ -198,8 +105,8 @@ class TodoTxtRefreshCommand(sublime_plugin.WindowCommand):
         view = self.window.active_view()
         if view is None:
             return
-        refresh_todotxt_view(view)
-        sublime.status_message(f'TodoTxt {VERSION}: refreshed')
+        view.run_command('todotxt_sync_subtasks')
+        sublime.status_message(f'TodoTxt {VERSION}: synced subtasks')
 
 
 class TodoTxtShowVersionCommand(sublime_plugin.ApplicationCommand):
@@ -211,6 +118,6 @@ class TodoTxtShowVersionCommand(sublime_plugin.ApplicationCommand):
             f'TodoTxt package version: {VERSION}\n\n'
             f'Active view is todo syntax: {in_todo}\n'
             f'Syntax path: {syntax}\n\n'
-            f'If the version is old, reinstall from git and run '
-            f'"Developer: Reload Window". Check the status bar for TodoTxt {VERSION}.'
+            f'Subtasks sync when the parent line uses + (children get +) or any '
+            f'other state (children get -). Triggered on edit, open, and reload.'
         )

@@ -2,3 +2,4 @@
 *.URL
 *.url
 .TodoTxt-tmLanguage
+__pycache__/

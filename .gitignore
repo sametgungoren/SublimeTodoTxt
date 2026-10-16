@@ -3,3 +3,4 @@
 *.url
 .TodoTxt-tmLanguage
 __pycache__/
+.todotxt_accent_meta.json

@@ -1,5 +1,8 @@
 {
     "todotxt_sync_subtasks": true,
+    "todotxt_accent_colors": true,
+    "todotxt_accent_active_color": "#22c55e",
+    "todotxt_accent_locked_color": "#a855f7",
     "auto_complete": true,
     "auto_complete_triggers": [
         {

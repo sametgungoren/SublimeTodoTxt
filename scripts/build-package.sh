@@ -28,6 +28,7 @@ PY
 FILES=(
   plugin.py
   todotxt_subtask_sync.py
+  todotxt_accent_scheme.py
   Default.sublime-commands
   TodoTxt.sublime-syntax
   Todo.txt.sublime-settings

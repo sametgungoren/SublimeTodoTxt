@@ -1,9 +1,10 @@
 import sublime
 import sublime_plugin
 
+from todotxt_accent_scheme import ensure_accent_color_scheme
 from todotxt_subtask_sync import sync_subtask_lines
 
-VERSION = "v2026.10.16.11.54.13"
+VERSION = "v2026.10.16.12.00.07"
 
 STATUS_KEY = 'todotxt_version'
 SYNC_BUSY_KEY = 'todotxt_sync_busy'
@@ -26,6 +27,24 @@ def is_todotxt_view(view):
     return view.match_selector(0, 'text.todotxt')
 
 
+def apply_todotxt_accent(view):
+    if not is_todotxt_view(view):
+        return
+
+    settings_get = view.settings().get
+    if not settings_get('todotxt_accent_colors', True):
+        view.settings().erase('color_scheme')
+        return
+
+    scheme = ensure_accent_color_scheme(
+        sublime.packages_path(),
+        sublime.load_settings('Preferences.sublime-settings').get,
+        settings_get,
+    )
+    if scheme:
+        view.settings().set('color_scheme', scheme)
+
+
 def schedule_sync(view):
     if not is_todotxt_view(view):
         return
@@ -36,6 +55,7 @@ def refresh_all_todotxt_views():
     for window in sublime.windows():
         for view in window.views():
             if is_todotxt_view(view):
+                apply_todotxt_accent(view)
                 schedule_sync(view)
 
 
@@ -49,13 +69,25 @@ def plugin_unloaded():
             view.erase_status(STATUS_KEY)
 
 
+class TodoTxtSettingsListener(sublime_plugin.EventListener):
+    def on_settings_changed(self, settings):
+        if settings.get('color_scheme') is None:
+            return
+        name = settings.get('default_name', '')
+        if name != 'Preferences.sublime-settings':
+            return
+        sublime.set_timeout(refresh_all_todotxt_views, 0)
+
+
 class TodoTxtSubtaskListener(sublime_plugin.ViewEventListener):
     def on_load(self):
+        apply_todotxt_accent(self.view)
         schedule_sync(self.view)
 
     def on_activated(self):
         if is_todotxt_view(self.view):
             self.view.set_status(STATUS_KEY, f'TodoTxt {VERSION}')
+            apply_todotxt_accent(self.view)
         else:
             self.view.erase_status(STATUS_KEY)
         schedule_sync(self.view)
@@ -105,8 +137,9 @@ class TodoTxtRefreshCommand(sublime_plugin.WindowCommand):
         view = self.window.active_view()
         if view is None:
             return
+        apply_todotxt_accent(view)
         view.run_command('todotxt_sync_subtasks')
-        sublime.status_message(f'TodoTxt {VERSION}: synced subtasks')
+        sublime.status_message(f'TodoTxt {VERSION}: refreshed')
 
 
 class TodoTxtShowVersionCommand(sublime_plugin.ApplicationCommand):

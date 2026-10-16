@@ -29,7 +29,7 @@ Priorities `(A)`–`(Z)`, `@context`, inline `+project`, dates, and `//` comment
 
 ### Colors
 
-The package does **not** change your color scheme or background. `*` and `?` use scopes `entity.task.todotxt.active` and `entity.task.todotxt.locked`; your theme controls the colors. Optional green/purple: [docs/colors.md](docs/colors.md).
+`*` and `?` use green/purple via a generated **accent** scheme that **extends your current theme** (background unchanged). See [docs/colors.md](docs/colors.md). Disable with `todotxt_accent_colors`: false.
 
 ### Subtasks (indented lines)
 
